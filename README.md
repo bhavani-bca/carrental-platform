@@ -34,7 +34,7 @@ Spring Data JPA
 H2 (file-based DB) / MySQL (optional, production-ready) 
 
 
-* Frontend
+*Frontend
 
 HTML
 
@@ -51,6 +51,8 @@ Email Service
 SMTP (Used for 2FA email verification)
 
 
+
+
 🚀 Future Enhancements
 
 * Online payment integration
@@ -62,5 +64,6 @@ SMTP (Used for 2FA email verification)
 * Advanced admin dashboard
 
 * User analytics
+
 
 
