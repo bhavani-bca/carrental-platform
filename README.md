@@ -1,6 +1,11 @@
-🚗 Car Rental Platform
+CarEase - Car Rental Platform
 
-A fully functional Car Rental Platform built using Spring Boot for backend and Thymeleaf for the frontend. The platform allows users to browse cars, book rentals, manage bookings, and perform authentication with Spring Security and 2FA email verification.
+Project Overview
+
+CarEase is a web-based car rental platform built using Java Spring Boot. It allows users to browse available vehicles, book cars for a specified period, and manage their bookings through an intuitive interface.
+
+The platform provides a seamless and interactive rental experience for users.
+
 
 ✨ Features
 
@@ -44,8 +49,6 @@ JavaScript
 
 Bootstrap
 
-Thymeleaf (templating engine)
-
 Email Service
 
 SMTP (Used for 2FA email verification)
@@ -64,6 +67,7 @@ SMTP (Used for 2FA email verification)
 * Advanced admin dashboard
 
 * User analytics
+
 
 
 
