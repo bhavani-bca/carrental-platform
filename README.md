@@ -1,7 +1,8 @@
-###🚗 Car Rental Platform
+🚗 Car Rental Platform
+
 A fully functional Car Rental Platform built using Spring Boot for backend and Thymeleaf for the frontend. The platform allows users to browse cars, book rentals, manage bookings, and perform authentication with Spring Security and 2FA email verification.
 
-##✨ Features
+✨ Features
 
 🔹 User Features
 
@@ -18,7 +19,7 @@ A fully functional Car Rental Platform built using Spring Boot for backend and T
 * View customer activity
 * Dashboard for platform management
 
-##🛠️ Technology Stack
+🛠️ Technology Stack
 
 Backend
 
@@ -49,7 +50,7 @@ Email Service
 SMTP (Used for 2FA email verification)
 
 
-##🚀 Future Enhancements
+🚀 Future Enhancements
 
 * Online payment integration
 
@@ -60,3 +61,4 @@ SMTP (Used for 2FA email verification)
 * Advanced admin dashboard
 
 * User analytics
+
