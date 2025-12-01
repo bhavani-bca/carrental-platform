@@ -21,7 +21,7 @@ A fully functional Car Rental Platform built using Spring Boot for backend and T
 
 🛠️ Technology Stack
 
-Backend
+*Backend
 
 Java
 
@@ -31,9 +31,10 @@ Spring Security (Authentication, 2FA)
 
 Spring Data JPA
 
-H2 (file-based DB) / MySQL (optional, production-ready)
+H2 (file-based DB) / MySQL (optional, production-ready) 
 
-Frontend
+
+* Frontend
 
 HTML
 
@@ -61,4 +62,5 @@ SMTP (Used for 2FA email verification)
 * Advanced admin dashboard
 
 * User analytics
+
 
