@@ -1,45 +1,49 @@
-# Car Rental Platform
+# CarEase - Car Rental Platform
+## Project Overview
+CarEase is a web-based car rental platform built using Java Spring Boot. It allows users to browse available vehicles, book cars for a specified period, and manage their bookings through an intuitive interface.
 
-## Introduction
-This is a full-stack Car Rental Platform built using Java, Spring Boot, Spring Security, Spring Data JPA, Thymeleaf, HTML, CSS, and JavaScript.
+The platform provides a seamless and interactive rental experience for users.
 
 ## Features
-- User authentication with 2FA (email OTP)
-- Car management and inventory
-- Booking system
-- Responsive UI
-- Admin panel
+### User Module
 
-## Technologies Used
+Browse available vehicles with search filters
+Book cars for desired periods
+View booking history and details
+Update personal information
 
-### Backend (Java + Spring)
-- Java
-- Spring Boot
-- Spring Security
-- Spring Data JPA
-- H2 / MySQL
+### Common Features
 
-### Frontend (HTML / CSS / JS / Thymeleaf)
-- HTML5
-- CSS3
-- JavaScript
-- Bootstrap
+Secure authentication and authorization
+Two-Factor Authentication (2FA) implemented via SMTP email
+Transaction and booking history
+Error handling and logs
+Interactive dashboards
 
+## Technology Stack
 
-  ###  🚀 Future Enhancements
+Backend: Java, Spring Boot, Spring Security, Spring Data JPA
+Frontend: HTML, CSS, JavaScript, Bootstrap, Thymeleaf
+Database: H2 (file-based) / MySQL (optional)
+Email Service: SMTP (used for 2FA)
+Tools: Maven, GitHub, IntelliJ IDEA / Eclipse
 
-Online payment integration
+## Database Structure
+Tables:
 
-Real-time car availability
+users – stores user details
+vehicles – stores car details, rent per day, availability
+bookings – stores booking details (user, vehicle, from_date, to_date)
+audit_logs – optional table for tracking system changes
 
-SMS OTP support
+## Usage
 
-Advanced admin dashboard
+User: Browse vehicles, book cars, view booking history, update profile, and verify 2FA via email
 
-User analytics
+## Future Enhancements
 
-
-
-
-
-
+Integration with payment gateways
+Mobile app version
+Advanced search and recommendation engine
+Multi-location and multi-currency support
+Enhanced reporting and analytics
