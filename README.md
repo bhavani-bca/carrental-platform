@@ -24,21 +24,20 @@ This is a full-stack Car Rental Platform built using Java, Spring Boot, Spring S
 - CSS3
 - JavaScript
 - Bootstrap
-- Thymeleaf
 
-### Tools
-- Maven
-- IntelliJ IDEA / Eclipse
-- GitHub
 
-## System Architecture
-Frontend → Spring Boot Backend → H2/MySQL  
-Backend uses MVC architecture with Controller, Service, Repository layers.
+  ###  🚀 Future Enhancements
 
-## Installation
-1. Clone the repository  
-   ```bash
-   git clone https://github.com/bhavani-bca/carrental-platform
+Online payment integration
+
+Real-time car availability
+
+SMS OTP support
+
+Advanced admin dashboard
+
+User analytics
+
 
 
 
