@@ -57,34 +57,28 @@ Email Service
 SMTP (Used for 2FA email verification)
 
 System Architecture
+[Frontend (HTML/CSS/JS)] --> [Spring Boot Backend (REST APIs)] --> [Database (H2/MySQL)]
+                               |
+                               --> [SMTP Service for 2FA Email Verification]
+MVC Architecture for backend structure
+Service layer handles business logic
+Controller layer manages client requests
+Repository layer handles database operations
+Database Structure
+Tables:
 
- ┌───────────────────────────────────────────────────────────────┐
- │                           Frontend                            │
- │                (HTML, CSS, JavaScript, Thymeleaf)             │
- └───────────────▲───────────────────────────────────────────────┘
-                 │   HTTP Requests (Forms / REST Calls)
-                 ▼
- ┌───────────────────────────────────────────────────────────────┐
- │                         Spring Boot Backend                   │
- │                                                               │
- │  ┌───────────────┐   ┌────────────────┐   ┌────────────────┐  │
- │  │  Controller    │→ │    Service     │→ │   Repository    │  │
- │  │   Layer        │   │    Layer      │   │    Layer       │  │
- │  └───────────────┘   └────────────────┘   └────────────────┘  │
- │                                                               │
- │   - Handles incoming requests                                  │
- │   - Applies MVC pattern                                        │
- │   - Spring Security for authentication                         │
- │   - SMTP email service for **Two-Factor Authentication (2FA)** │
- └───────────────▲──────────────────────────┬────────────────────┘
-                 │                          │
-                 │ JPA / Hibernate          │ SMTP (Mail Sender)
-                 ▼                          ▼
- ┌──────────────────────────────┐    ┌───────────────────────────┐
- │         Database             │    │     SMTP Email Server      │
-
- │     (H2 or MySQL)           │    │  Sends OTP for 2FA Login   │
- └──────────────────────────────┘    └───────────────────────────┘
+users – stores user details
+vehicles – stores car details, rent per day, availability
+bookings – stores booking details (user, vehicle, from_date, to_date)
+audit_logs – optional table for tracking system changes
+API Endpoints
+Endpoint	Method	Description
+/api/users	GET	List all users
+/api/users	POST	Register a new user
+/api/vehicles	GET	List all vehicles
+/api/bookings	POST	Create a booking
+/api/bookings/{id}	GET	View booking details
+All APIs are secured with authentication and 2FA via SMTP.
 
 
 🛠️ Installation
@@ -123,5 +117,6 @@ SMS OTP support
 Advanced admin dashboard
 
 User analytics
+
 
 
