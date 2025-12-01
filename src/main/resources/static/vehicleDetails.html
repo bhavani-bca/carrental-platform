@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Details</title>
+    <style>
+		/* General Body Styles */
+		body {
+		    font-family: 'Arial', sans-serif;
+		    background-color: #f4f4f4;
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		    height: 100vh;
+		    margin: 0;
+		    color: #333;
+		    flex-direction: column;
+		    padding: 20px;
+		}
+
+		/* Vehicle Details Wrapper */
+		.vehicle-details-wrapper {
+		    display: flex;
+		    flex-direction: row-reverse; /* Swapped the direction to move image to left and form to right */
+		    justify-content: center;
+		    align-items: center;
+		    width: 100%;
+		    max-width: 1200px;
+		    gap: 20px;
+		}
+
+		/* Image Styling */
+		.vehicle-image {
+		    flex: 1;
+		    max-width: 900px;  /* Increased the image size */
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		}
+
+		.vehicle-image img {
+		    width: 100%;
+		    height: auto;
+		    border-radius: 15px;
+		    transition: transform 0.3s ease;
+		}
+
+		.vehicle-image img:hover {
+		    transform: scale(1.1);
+		}
+
+		/* Vehicle Info Container */
+		.vehicle-info {
+		    flex: 2;
+		    display: flex;
+		    flex-direction: column;
+		    justify-content: center;
+		    padding: 20px;
+		    background-color: #fff;
+		    border-radius: 20px;
+		    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+		}
+
+		.vehicle-info h2 {
+		    font-size: 1.6em;
+		    color: #333;
+		    margin-bottom: 20px;
+		}
+
+		.vehicle-info p {
+		    font-size: 16px;
+		    color: #555;
+		    line-height: 1.5;
+		    margin: 5px 0;
+		}
+
+		/* Button Styling */
+		button {
+		    background-color: #007bff;
+		    color: white;
+		    padding: 12px 20px;
+		    border: none;
+		    border-radius: 30px;
+		    cursor: pointer;
+		    font-weight: bold;
+		    transition: background-color 0.3s ease, transform 0.3s ease;
+		    margin-top: 15px;
+		}
+
+		button:hover {
+		    background-color: #0056b3;
+		    transform: scale(1.05);
+		}
+
+		/* Animations */
+		@keyframes fadeIn {
+		    from {
+		        opacity: 0;
+		        transform: translateY(10px);
+		    }
+		    to {
+		        opacity: 1;
+		        transform: translateY(0);
+		    }
+		}
+
+		/* Loading Overlay */
+		.loading-overlay {
+		    position: fixed;
+		    top: 0;
+		    left: 0;
+		    width: 100%;
+		    height: 100%;
+		    background: rgba(0, 0, 0, 0.5);
+		    display: none;
+		    justify-content: center;
+		    align-items: center;
+		    z-index: 9999;
+		}
+
+		.loading-text {
+		    background: rgba(255, 255, 255, 0.9);
+		    padding: 20px;
+		    border-radius: 15px;
+		    font-size: 18px;
+		    font-weight: bold;
+		    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+		}
+
+		/* Input Fields */
+		input, select {
+		    width: 96%;
+		    padding: 12px;
+		    margin: 8px 0;
+		    border: 1px solid #ccc;
+		    border-radius: 8px;
+		    background: #f8f8f8;
+		    font-size: 16px;
+		    outline: none;
+		    transition: background 0.3s ease, box-shadow 0.3s ease;
+		}
+
+		/* Focus effect for inputs */
+		input:focus, select:focus {
+		    background: #fff;
+		    box-shadow: 0 0 10px rgba(0, 0, 255, 0.2);
+		}
+
+		/* Mobile Adjustments */
+		@media (max-width: 768px) {
+		    .vehicle-details-wrapper {
+		        flex-direction: column;
+		    }
+
+		    .vehicle-info {
+		        width: 100%;
+		        padding: 15px;
+		    }
+
+		    .vehicle-image {
+		        max-width: 100%;
+		    }
+
+		    .vehicle-image img {
+		        max-width: 100%;
+		    }
+		}
+
+    </style>
+    <script>
+        let selectedVehicleId = null;
+        let userId = null; // Fetch using email
+        let bookingId = null;
+
+		function showLoading() {
+		            document.getElementById("loadingOverlay").style.display = "flex";
+		}
+
+		function hideLoading() {
+		            document.getElementById("loadingOverlay").style.display = "none";
+		}
+		
+		
+       
+		async function loadVehicleDetails() {
+		          const company = localStorage.getItem("selectedCompany");
+		          const model = localStorage.getItem("selectedModel");
+		          const email = localStorage.getItem("userEmail");  // Fetch user email from localStorage
+
+		          if (!company || !model) {
+		              document.getElementById("vehicleDetails").innerHTML = "<p>Vehicle details not found.</p>";
+		              return;
+		          }
+
+		          try {
+		              // Fetch User ID using Email
+		              const userResponse = await fetch(`http://localhost:8080/api/users/by-email?email=${encodeURIComponent(email)}`);
+		              const userData = await userResponse.json();
+		              userId = userData.id;
+		              
+		              // Fetch Vehicle Details
+		              const response = await fetch(`http://localhost:8080/api/vehicles?company=${encodeURIComponent(company)}&model=${encodeURIComponent(model)}`);
+		              const data = await response.json();
+		              console.log("Vehicle API Response:", data); 
+
+		              let vehicle = (data.content && data.content.length > 0) ? data.content[0] : null;
+		              if (!vehicle) {
+		                  document.getElementById("vehicleDetails").innerHTML = "<p>Vehicle details not found.</p>";
+		                  return;
+		              }
+
+		              selectedVehicleId = vehicle.id;  // Store Vehicle ID
+
+		              document.getElementById("vehicleDetails").innerHTML = `
+		                  <div class="vehicle-details-wrapper">
+		                      <div class="vehicle-image">
+		                          <img src="${vehicle.imgUrl}" alt="${vehicle.model}">
+		                      </div>
+		                      <div class="vehicle-info">
+		                          <h2>${vehicle.model} (${vehicle.company})</h2>
+		                          <p><strong>Fuel Type:</strong> ${vehicle.fuelType}</p>
+		                          <p><strong>Rent Per Day:</strong> ₹${vehicle.rent}</p>
+		                          <p><strong>Seating Capacity:</strong> ${vehicle.seatingCapacity}</p>
+		                          <p><strong>Availability:</strong> ${vehicle.isAvailable ? 'Available' : 'Not Available'}</p>
+		                          <p><strong>Number Plate:</strong> ${vehicle.noPlate}</p>
+		                          <p><strong>Mileage:</strong> ${vehicle.mileage} kmpl</p>
+		                          <h3>Book This Vehicle</h3>
+		                          <label>From Date:</label>
+		                          <input type="date" id="fromDate" min="<?= date('Y-m-d'); ?>">
+		                          <label>To Date:</label>
+		                          <input type="date" id="toDate" min="<?= date('Y-m-d'); ?>">
+		                          <button class="book-btn" onclick="calculateRent()">Calculate Rent</button>
+		                          <p id="totalRent"></p>
+		                          <button class="book-btn" onclick="bookCar()" style="display:none;" id="bookCarBtn">Book Car</button>
+		                      </div>
+		                  </div>
+		                  <div id="otpSection" style="display:none;">
+		                      <label>Enter OTP:</label>
+		                      <input type="text" id="otp">
+		                      <button class="book-btn" onclick="verifyOtp()">Verify OTP</button>
+		                  </div>
+
+		                  <div id="paymentSection" style="display:none;">
+		                      <label>Payment Type:</label>
+		                      <select id="paymentType">
+		                          <option value="WALLET">Wallet</option>
+		                          <option value="CREDIT_CARD">Credit Card</option>
+		                      </select>
+		                      <label>Payment Number:</label>
+		                      <input type="text" id="paymentNumber">
+		                      <label>Wallet PIN (if using Wallet):</label>
+		                      <input type="password" id="walletPin">
+		                      <button class="book-btn" onclick="makePayment()">Make Payment</button>
+		                  </div>
+
+		                  <br><br>
+		                  <button class="back-btn" onclick="goBack()">Back to Dashboard</button>
+		              `;
+		          } catch (error) {
+		              console.error("Error fetching vehicle details:", error);
+		              document.getElementById("vehicleDetails").innerHTML = "<p>Error loading vehicle details.</p>";
+		          }
+		      }
+
+			  async function calculateRent() {
+			      const fromDate = document.getElementById("fromDate").value;
+			      const toDate = document.getElementById("toDate").value;
+			      const vehicleId = localStorage.getItem("selectedVehicleId");
+
+			      if (!fromDate || !toDate || !vehicleId) {
+			          alert("Please select dates and ensure a vehicle is selected.");
+			          return;
+			      }
+
+			      try {
+			          const requestBody = { 
+			              vehicleId: parseInt(vehicleId), 
+			              startDate: fromDate, 
+			              endDate: toDate 
+			          };
+
+			          const response = await fetch("http://localhost:8080/booking/bookings/calculate-rent", {
+			              method: "POST",
+			              headers: { "Content-Type": "application/json" },
+			              body: JSON.stringify(requestBody)
+			          });
+
+			          const data = await response.json();
+			          console.log("Rent Calculation Response:", data); // Debugging Log
+
+			          const rentText = document.getElementById("totalRent");
+			          const bookButton = document.getElementById("bookCarBtn");
+
+			          if (response.ok && data.totalRent !== undefined) {
+			              rentText.innerText = `Total Rent: ₹${data.totalRent}`;
+			              bookButton.style.display = "block";  // Show "Book Car" button
+			              localStorage.setItem("totalRent", data.totalRent);
+			              console.log("Stored Total Rent in LocalStorage:", data.totalRent);
+			          } else {
+			              // Display backend error messages dynamically
+			              rentText.innerText = data.message || "Error fetching total rent.";
+			              bookButton.style.display = "none";  // Hide "Book Car" button
+			          }
+			      } catch (error) {
+			          console.error("Error calculating rent:", error);
+			          document.getElementById("totalRent").innerText = "Error fetching total rent.";
+			      }
+			  }
+
+
+		async function fetchUserIdByEmail() {
+		        const userEmail = localStorage.getItem("userEmail"); // Get stored email
+		        if (!userEmail) {
+		            console.error("User email not found in localStorage.");
+		            return null;
+		        }
+
+		        try {
+		            const response = await fetch(`http://localhost:8080/auth/user-id?email=${encodeURIComponent(userEmail)}`);
+
+		            if (!response.ok) {
+		                throw new Error(`Error fetching user ID: ${response.statusText}`);
+		            }
+
+		            const userId = await response.json(); // Assuming response is just the user ID
+		            console.log("Fetched User ID:", userId);
+		            return userId;
+		        } catch (error) {
+		            console.error("Error fetching user ID:", error);
+		            return null;
+		        }
+		    }
+
+		
+			async function bookCar() {
+			            const userEmail = localStorage.getItem("userEmail");
+			            const vehicleId = localStorage.getItem("selectedVehicleId");
+			            const fromDateInput = document.getElementById("fromDate").value;
+			            const toDateInput = document.getElementById("toDate").value;
+
+			            if (!userEmail || !vehicleId || !fromDateInput || !toDateInput) {
+			                alert("Error: Missing required booking details.");
+			                return;
+			            }
+
+			            try {
+			                showLoading(); // SHOW LOADING OVERLAY
+
+			                const userResponse = await fetch(`http://localhost:8080/auth/user-id?email=${encodeURIComponent(userEmail)}`);
+			                const userData = await userResponse.json();
+
+			                if (!userResponse.ok) {
+			                    throw new Error(userData.message || `Failed to fetch user ID (Status: ${userResponse.status})`);
+			                }
+
+			                const userId = userData.userId;
+
+			                const requestBody = {
+			                    userId: parseInt(userId),
+			                    vehicleId: parseInt(vehicleId),
+			                    fromDate: fromDateInput,
+			                    toDate: toDateInput
+			                };
+
+			                const response = await fetch("http://localhost:8080/booking/bookCar", {
+			                    method: "POST",
+			                    headers: { "Content-Type": "application/json" },
+			                    body: JSON.stringify(requestBody)
+			                });
+
+			                const responseData = await response.json();
+
+			                if (!response.ok) {
+			                    throw new Error(responseData.message || `Booking failed with status: ${response.status}`);
+			                }
+
+			                if (responseData.bookingId) {
+			                    localStorage.setItem("bookingId", responseData.bookingId);
+			                    alert("✅ Booking Under Process! OTP sent for verification. Please Verify OTP");
+			                    document.getElementById("otpSection").style.display = "block";
+			                } else {
+			                    throw new Error("Booking failed. Please try again.");
+			                }
+			            } catch (error) {
+			                console.error("❌ Error booking car:", error);
+			                alert(`❌ Error: ${error.message}`);
+			            } finally {
+			                hideLoading(); // HIDE LOADING OVERLAY
+			            }
+			        }
+
+
+			async function verifyOtp() {
+			    const otpInput = document.getElementById("otp").value; 
+			    const storedBookingId = localStorage.getItem("bookingId"); 
+
+			    if (!storedBookingId) {
+			        console.error("❌ No stored booking ID found!");
+			        alert("Booking ID not found. Please book a car first.");
+			        return;
+			    }
+
+			    // Show loading overlay
+			    document.getElementById("loadingOverlay").style.display = "flex";
+
+			    const requestData = {
+			        bookingId: parseInt(storedBookingId),  
+			        otp: otpInput
+			    };
+
+			    console.log("📤 Sending OTP verification request:", requestData);
+
+			    try {
+			        const response = await fetch("http://localhost:8080/booking/verifyOtp", {
+			            method: "POST",
+			            headers: { "Content-Type": "application/json" },
+			            body: JSON.stringify(requestData),
+			        });
+
+			        const data = await response.text();
+			        console.log("🔍 Server Response:", data);
+
+			        if (response.ok) {
+			            alert("✅ OTP verified! Proceed to payment.");
+			            window.location.href = "payment.html"; 
+			        } else {
+			            alert("❌ OTP verification failed: " + data);
+			        }
+			    } catch (error) {
+			        console.error("🔥 Error verifying OTP:", error);
+			        alert("Server error! Please try again.");
+			    } finally {
+			        // Hide loading overlay after response
+			        document.getElementById("loadingOverlay").style.display = "none";
+			    }
+			}
+
+
+        function goBack() {
+            window.location.href = "dashboard.html";
+        }
+
+		document.addEventListener("DOMContentLoaded", function () {
+		            let today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+		            let fromDate = document.getElementById("fromDate");
+		            let toDate = document.getElementById("toDate");
+
+		            // Set min attribute to prevent past dates
+		            fromDate.min = today;
+		            toDate.min = today;
+
+		            // Event listener for From Date change
+		            fromDate.addEventListener("change", function () {
+		                toDate.value = ""; // Reset toDate if fromDate changes
+		                toDate.min = fromDate.value; // Ensure To Date cannot be before From Date
+		            });
+
+		            // Prevent To Date from being earlier than From Date
+		            toDate.addEventListener("change", function () {
+		                if (toDate.value < fromDate.value) {
+		                    alert("⚠️ To Date cannot be before From Date.");
+		                    toDate.value = ""; // Reset invalid input
+		                }
+		            });
+		        });
+		
+				document.addEventListener("DOMContentLoaded", function () {
+				           window.onload = loadVehicleDetails;
+				       });
+		
+			
+    </script>
+</head>
+<body>
+    <div class="vehicle-details" id="vehicleDetails">
+        <p>Loading vehicle details...</p>
+    </div>
+	<div id="otpSection" style="display: none;">
+	    <h3>Enter OTP</h3>
+	    <input type="text" id="otpInput" placeholder="Enter OTP">
+	    <button onclick="verifyOtp()">Verify OTP</button>
+	</div>
+	<!-- LOADING OVERLAY -->
+	   <div class="loading-overlay" id="loadingOverlay">
+	       <div class="loading-text">Processing... Please wait.</div>
+	   </div>
+</body>
+</html>

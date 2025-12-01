@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Review</title>
+    <style>
+		body {
+		    font-family: 'Arial', sans-serif;
+		    margin: 50px;
+		    background-color: #f4f4f4;
+		    position: relative;
+		    animation: fadeIn 1s ease-in-out;
+		    color: #333;
+		}
+
+		.container {
+		    max-width: 400px;
+		    background: white;
+		    padding: 30px;
+		    border-radius: 10px;
+		    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+		    display: none;
+		    position: fixed;
+		    top: 50%;
+		    left: 50%;
+		    transform: translate(-50%, -50%);
+		    z-index: 10;
+		    animation: slideUp 0.5s ease-out;
+		    border: 1px solid #ddd;
+		}
+
+		.booking-container {
+		    display: flex;
+		    flex-wrap: wrap;
+		    gap: 20px;
+		    animation: fadeInUp 1s ease-in-out;
+		}
+
+		.card {
+		    background: #ffffff;
+		    padding: 20px;
+		    border-radius: 10px;
+		    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+		    cursor: pointer;
+		    width: 250px;
+		    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+		    transform: translateY(10px);
+		    font-size: 1rem;
+		    color: #555;
+		}
+
+		.card:hover {
+		    background-color: #f8f8f8;
+		    transform: translateY(-5px);
+		}
+
+		.card.blurred {
+		    filter: blur(5px);
+		}
+
+		label {
+		    font-weight: bold;
+		    font-size: 1.1em;
+		    color: #444;
+		    transition: color 0.3s ease;
+		}
+
+		input, textarea {
+		    width: 96%;
+		    padding: 12px;
+		    margin: 8px 0 18px;
+		    border: 1px solid #ccc;
+		    border-radius: 8px;
+		    font-size: 1rem;
+		    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+		}
+
+		input:focus, textarea:focus {
+		    border-color: #28a745;
+		    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+		    outline: none;
+		}
+
+		input[readonly] {
+		    background-color: #f0f0f0;
+		}
+
+		button {
+		    background-color: #28a745;
+		    color: white;
+		    padding: 12px;
+		    border: none;
+		    border-radius: 8px;
+		    cursor: pointer;
+		    font-size: 1rem;
+		    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+		    width: 100%;
+		}
+
+		button:hover {
+		    background-color: #218838;
+		    transform: translateY(-3px);
+		}
+
+		button:active {
+		    transform: translateY(1px);
+		}
+
+		button:focus {
+		    outline: none;
+		    box-shadow: 0 0 10px rgba(40, 167, 69, 0.7);
+		}
+
+		.message {
+		    margin-top: 10px;
+		    font-weight: bold;
+		    font-size: 1.1em;
+		    opacity: 1;
+		    display: none;  /* Ensure it's hidden initially */
+		    transition: opacity 0.5s ease-in-out;
+		}
+
+
+		.message.show {
+		    opacity: 1;
+		    transform: translateY(0);
+		}
+
+		.section-title {
+		    font-size: 1.5em;
+		    margin-top: 20px;
+		    margin-bottom: 15px;
+		    color: #333;
+		    text-transform: uppercase;
+		    letter-spacing: 1.5px;
+		    font-weight: bold;
+		    animation: fadeInUp 1s ease-in-out;
+		}
+
+		@keyframes fadeIn {
+		    0% {
+		        opacity: 0;
+		    }
+		    100% {
+		        opacity: 1;
+		    }
+		}
+
+		@keyframes fadeInUp {
+		    0% {
+		        opacity: 0;
+		        transform: translateY(20px);
+		    }
+		    100% {
+		        opacity: 1;
+		        transform: translateY(0);
+		    }
+		}
+
+		@keyframes slideUp {
+		    0% {
+		        transform: translate(-50%, 50%);
+		        opacity: 0;
+		    }
+		    100% {
+		        transform: translate(-50%, -50%);
+		        opacity: 1;
+		    }
+		}
+		
+		#message {
+		    color: green;  /* Set a visible color */
+		    font-weight: bold;  /* Make it bold for better visibility */
+		    margin-top: 10px;  /* Add some space */
+		}
+
+
+    </style>
+</head>
+<body onload="fetchUserId()">
+    <h2>Your Bookings</h2>
+
+    <div class="section-title">Bookings with Reviews</div>
+    <div class="booking-container" id="bookingsWithReviews"></div>
+
+    <div class="section-title">Bookings without Reviews</div>
+    <div class="booking-container" id="bookingsWithoutReviews"></div>
+
+    <div class="container" id="reviewForm">
+        <h2>Submit Your Review</h2>
+        
+        <label for="userId">User ID:</label>
+        <input type="number" id="userId" readonly>
+        
+        <label for="vehicleId">Vehicle ID:</label>
+        <input type="number" id="vehicleId" readonly>
+        
+        <label for="rating">Rating (1-5):</label>
+        <input type="number" id="rating" min="1" max="5" required>
+        
+        <label for="feedback">Feedback:</label>
+        <textarea id="feedback" rows="3" required></textarea>
+        
+        <button onclick="submitReview()">Submit Review</button>
+		<p class="message" id="message" style="display: none;"></p>
+        
+        <button class="back-button" onclick="goBackToBookings()">Back to Bookings</button>
+    </div>
+
+    <script>
+        let userId;
+		let bookingsWithReviews = [];  // Global variable to store bookings with reviews
+		let bookingsWithoutReviews = [];  // Global variable to store bookings without reviews
+
+        async function fetchUserId() {
+            const storedEmail = localStorage.getItem("userEmail");
+            if (!storedEmail) {
+                alert("User not logged in!");
+                return;
+            }
+            try {
+                console.log("Fetching user ID for email:", storedEmail);
+                const response = await fetch(`http://localhost:8080/auth/user-id?email=${encodeURIComponent(storedEmail)}`);
+                
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                const data = await response.json();
+                console.log("User Data Response:", data);
+
+                if (!data || !data.userId) {
+                    throw new Error("User ID not found in response. Full response: " + JSON.stringify(data));
+                }
+
+                userId = data.userId;
+                console.log("Extracted User ID:", userId);
+                
+                fetchUserBookings();
+            } catch (error) {
+                console.error("Error fetching User ID:", error);
+                alert("Error fetching User ID. Please check console for details.");
+            }
+        }
+
+		// Modify the fetch function to populate the global variables
+		async function fetchUserBookings() {
+		    try {
+		        console.log("Fetching bookings for user ID:", userId);
+		        const bookingResponse = await fetch(`http://localhost:8080/api/bookings/reviews/${userId}`);
+
+		        if (!bookingResponse.ok) {
+		            console.error("API Response Status:", bookingResponse.status);
+		            throw new Error(`Failed to fetch bookings. Status: ${bookingResponse.status}`);
+		        }
+
+		        const data = await bookingResponse.json();
+		        console.log("Bookings Response:", data);
+
+		        bookingsWithReviews = data.bookingsWithReviews;  // Store bookings with reviews
+		        bookingsWithoutReviews = data.bookingsWithoutReviews;  // Store bookings without reviews
+
+		        displayBookings();  // Re-render the UI with updated data
+		    } catch (error) {
+		        console.error("Error fetching bookings:", error);
+		        alert("Error fetching bookings. Please try again later.");
+		    }
+		}
+
+		// Update the display function to show bookings in two sections
+		function displayBookings() {
+		           const withReviewsContainer = document.getElementById("bookingsWithReviews");
+		           const withoutReviewsContainer = document.getElementById("bookingsWithoutReviews");
+
+		           withReviewsContainer.innerHTML = "";
+		           withoutReviewsContainer.innerHTML = "";
+
+		           bookingsWithReviews.forEach(booking => {
+		               const card = document.createElement("div");
+		               card.classList.add("card");
+		               card.innerHTML = `
+		                   <p><strong>Vehicle ID:</strong> ${booking.vehicleId}</p>
+		                   <p><strong>From:</strong> ${booking.fromDate}</p>
+		                   <p><strong>To:</strong> ${booking.toDate}</p>
+		                   <p><strong>Rating:</strong> ${booking.rating}</p>
+		                   <p><strong>Feedback:</strong> ${booking.comment}</p>
+		               `;
+		               withReviewsContainer.appendChild(card);
+		           });
+
+		           bookingsWithoutReviews.forEach(booking => {
+		               const card = document.createElement("div");
+		               card.classList.add("card");
+		               card.innerHTML = `
+		                   <p><strong>Vehicle ID:</strong> ${booking.vehicleId}</p>
+		                   <p><strong>From:</strong> ${booking.fromDate}</p>
+		                   <p><strong>To:</strong> ${booking.toDate}</p>
+		               `;
+		               card.onclick = () => showReviewForm(booking.vehicleId);
+		               withoutReviewsContainer.appendChild(card);
+		           });
+		       }
+
+
+        function showReviewForm(vehicleId, cardElement) {
+            document.getElementById("reviewForm").style.display = "block";
+            document.getElementById("userId").value = userId;
+            document.getElementById("vehicleId").value = vehicleId;
+
+            const cards = document.querySelectorAll(".card");
+            cards.forEach(card => {
+                if (card !== cardElement) {
+                    card.classList.add("blurred");
+                }
+            });
+        }
+
+		async function submitReview() {
+		            const rating = document.getElementById("rating").value;
+		            const feedback = document.getElementById("feedback").value;
+		            const vehicleId = document.getElementById("vehicleId").value;
+		            const messageElement = document.getElementById("message");
+
+		            if (!rating || !feedback) {
+		                messageElement.innerText = "All fields are required!";
+		                messageElement.style.color = "red";
+		                messageElement.style.display = "block";
+		                return;
+		            }
+
+		            const reviewData = { userId, vehicleId, rating: parseInt(rating), feedback: feedback.trim() };
+
+		            try {
+		                const response = await fetch("http://localhost:8080/reviews/submit", {
+		                    method: "POST",
+		                    headers: { "Content-Type": "application/json" },
+		                    body: JSON.stringify(reviewData)
+		                });
+
+		                if (!response.ok) throw new Error(`Failed to submit review. Status: ${response.status}`);
+
+		                messageElement.innerText = "Review submitted successfully!";
+		                messageElement.style.color = "green";
+		                messageElement.style.display = "block";
+
+		                moveBookingToWithReviews(vehicleId, rating, feedback);
+		            } catch (error) {
+		                console.error("Error submitting review:", error);
+		            }
+		        }
+
+		
+		function moveBookingToWithReviews(vehicleId, rating, feedback) {
+		    const bookingIndex = bookingsWithoutReviews.findIndex(b => b.vehicleId == vehicleId);
+
+		    if (bookingIndex !== -1) {
+		        // Remove from "Without Reviews" and add to "With Reviews"
+		        let booking = bookingsWithoutReviews.splice(bookingIndex, 1)[0];
+		        
+		        // Update the booking details with the new review
+		        booking.rating = rating;
+		        booking.comment = feedback;
+
+		        bookingsWithReviews.push(booking);
+
+		        // Update the display
+		        displayBookings();
+		    }
+		}
+
+		
+		function removeDuplicates(bookings) {
+		            const seen = new Set();
+		            return bookings.filter(booking => {
+		                if (seen.has(booking.vehicleId)) {
+		                    return false;
+		                } else {
+		                    seen.add(booking.vehicleId);
+		                    return true;
+		                }
+		            });
+	}
+
+        function goBackToBookings() {
+            document.getElementById("reviewForm").style.display = "none";
+            const cards = document.querySelectorAll(".card");
+            cards.forEach(card => {
+                card.classList.remove("blurred");
+            });
+        }
+
+    </script>
+</body>
+</html>

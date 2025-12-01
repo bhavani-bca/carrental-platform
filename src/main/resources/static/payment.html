@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            margin: 20px;
+        }
+        .payment-form {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            text-align: left;
+            width: 50%;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            font-size: 16px;
+            color: #666;
+        }
+        .payment-btn {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .payment-btn:hover {
+            background-color: #0056b3;
+        }
+        input, select {
+            width: 90%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+		
+		/* LOADING OVERLAY */
+		       .loading-overlay {
+		           position: fixed;
+		           top: 0;
+		           left: 0;
+		           width: 100%;
+		           height: 100%;
+		           background: rgba(0, 0, 0, 0.4);
+		           backdrop-filter: blur(5px);
+		           display: none;
+		           justify-content: center;
+		           align-items: center;
+		           z-index: 9999;
+		       }
+
+		       .loading-text {
+		           background: white;
+		           padding: 20px;
+		           border-radius: 10px;
+		           font-size: 18px;
+		           font-weight: bold;
+		           box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+		       }
+    </style>
+    <script>
+		
+		function showLoading() {
+		           document.getElementById("loadingOverlay").style.display = "flex";
+		       }
+
+		       function hideLoading() {
+		           document.getElementById("loadingOverlay").style.display = "none";
+		       }
+		
+	
+			   async function makePayment() {
+			       const bookingId = localStorage.getItem("bookingId"); // Get stored booking ID
+			       const paymentType = document.getElementById("paymentType").value;
+			       const paymentNumber = document.getElementById("paymentNumber").value;
+			       const walletPin = document.getElementById("walletPin").value;
+
+			       if (!bookingId || !paymentType || !paymentNumber || !walletPin) {
+			           alert("Error: Missing Payment Details.");
+			           return;
+			       }
+
+			       try {
+			           showLoading(); // SHOW LOADING OVERLAY
+
+			           const response = await fetch("http://localhost:8080/booking/makePayment", {
+			               method: "POST",
+			               headers: { "Content-Type": "application/json" },
+			               body: JSON.stringify({
+			                   bookingId: parseInt(bookingId), 
+			                   paymentType: paymentType,
+			                   paymentNumber: paymentNumber,
+			                   walletPin: walletPin
+			               })
+			           });
+
+			           let responseData;
+			           const contentType = response.headers.get("content-type");
+
+			           if (contentType && contentType.includes("application/json")) {
+			               responseData = await response.json();
+			           } else {
+			               responseData = await response.text();
+			           }
+
+			           console.log("🔍 Server Response:", responseData);
+
+			           if (response.ok && (responseData.message === "Payment successful! Booking confirmed." || responseData === "Payment successful! Booking confirmed.")) {
+			               alert("✅ Payment Successful! Booking Confirmed.");
+			               localStorage.removeItem("bookingId"); // Remove booking ID after successful payment
+			               
+			               // Fetch invoice
+			               await fetchInvoice(bookingId);
+
+			           } else {
+			               alert(responseData.message || responseData || "❌ Payment failed.");
+			           }
+			       } catch (error) {
+			           console.error("🔥 Error making payment:", error);
+			           alert("❌ Error processing your payment.");
+			       } finally {
+			           hideLoading(); // HIDE LOADING OVERLAY
+			       }
+			   }
+			   
+			   
+			   
+			   
+			   
+			   async function fetchInvoice(bookingId) {
+			       try {
+			           const response = await fetch(`http://localhost:8080/api/invoice/${bookingId}`);
+
+			           if (!response.ok) {
+			               throw new Error("Failed to fetch invoice.");
+			           }
+
+			           const invoiceData = await response.json();
+			           console.log("🔍 Invoice Data:", invoiceData); // Debugging log
+
+			           // Check if required data exists before generating the PDF
+			           if (!invoiceData || !invoiceData.BOOKING_ID || !invoiceData.USER_FIRST_NAME) {
+			               throw new Error("Invalid invoice data.");
+			           }
+
+			           generatePDF(invoiceData);
+			       } catch (error) {
+			           console.error("❌ Error fetching invoice:", error);
+			           alert("❌ Could not generate invoice. Check console for details.");
+			       }
+			   }
+			   
+			   function generatePDF(invoiceData) {
+			       const { jsPDF } = window.jspdf;
+
+			       if (!jsPDF) {
+			           alert("❌ jsPDF is not loaded. Check script import.");
+			           return;
+			       }
+
+			       const doc = new jsPDF();
+			       doc.setFont("helvetica", "bold");
+			       doc.text("Car Rental Invoice", 80, 10);
+			       doc.setFont("helvetica", "normal");
+
+			       let y = 20;
+			       doc.text(`Booking ID: ${invoiceData.BOOKING_ID}`, 10, y);
+			       doc.text(`User: ${invoiceData.USER_FIRST_NAME} ${invoiceData.USER_LAST_NAME}`, 10, y + 10);
+			       doc.text(`Email: ${invoiceData.USER_EMAIL}`, 10, y + 20);
+			       doc.text(`Car: ${invoiceData.COMPANY} ${invoiceData.MODEL}`, 10, y + 30);
+			       doc.text(`Number Plate: ${invoiceData.NO_PLATE}`, 10, y + 40);
+			       doc.text(`From: ${invoiceData.FROM_DATE}`, 10, y + 50);
+			       doc.text(`To: ${invoiceData.TO_DATE}`, 10, y + 60);
+			       doc.text(`Status: ${invoiceData.STATUS}`, 10, y + 70);
+			       doc.text(`Payment Status: ${invoiceData.PAYMENT_STATUS}`, 10, y + 80);
+			       doc.text(`Transaction ID: ${invoiceData.TRANSACTION_ID}`, 10, y + 90);
+			       doc.text(`Total Amount: ₹${invoiceData.AMOUNT}`, 10, y + 100);
+			       doc.text(`Rent per day: ₹${invoiceData.RENT}`, 10, y + 110);
+
+			       doc.save(`Invoice_${invoiceData.BOOKING_ID}.pdf`);
+			       alert("📜 Invoice downloaded successfully!");
+			       window.location.href = "dashboard.html";
+			   }
+
+					   
+			function fetchTotalRent() {
+				const totalRent = localStorage.getItem("totalRent");
+				if (!totalRent) {
+				alert("Total Rent not found.");
+					return;
+				}
+				document.getElementById("totalRent").value = `₹${totalRent}`;
+			}
+			
+			window.onload = function () {
+			    fetchTotalRent();
+			};
+
+		
+		
+			async function checkWalletBalance() {
+			       const paymentNumber = document.getElementById("paymentNumber").value;
+			       const walletPin = document.getElementById("walletPin").value;
+
+			       if (!paymentNumber || !walletPin) {
+			           alert("Please enter Wallet Number and PIN.");
+			           return;
+			       }
+
+			       try {
+			           showLoading();
+			           const response = await fetch("http://localhost:8080/wallet/checkBalance", {
+			               method: "POST",
+			               headers: { "Content-Type": "application/json" },
+			               body: JSON.stringify({ walletNumber: paymentNumber, pin: walletPin })
+			           });
+
+			           if (!response.ok) {
+			               throw new Error("Failed to fetch wallet balance.");
+			           }
+
+			           const data = await response.text(); // Fetch text response
+			           document.getElementById("walletBalance").innerText = `Wallet Balance: ${data}`;
+			       } catch (error) {
+			           console.error("Error fetching wallet balance:", error);
+			           alert("Error checking wallet balance.");
+			       } finally {
+			           hideLoading();
+			       }
+			   }
+			
+    </script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</head>
+<body>
+    <div class="payment-form">
+        <h3>Make Payment</h3>
+        <label>Payment Type:</label>
+        <select id="paymentType">
+            <option value="WALLET">Wallet</option>
+          <!--  <option value="CREDIT_CARD">Credit Card</option> -->
+        </select>
+        <br>
+        <input type="text" id="paymentNumber" placeholder="Enter Payment Number">
+        <input type="password" id="walletPin" placeholder="Enter Wallet PIN">
+		<input type="text" id="totalRent" placeholder="Total Rent" disabled>
+        <button class="payment-btn" onclick="makePayment()">Make Payment</button>
+		<button class="payment-btn" onclick="checkWalletBalance()">Check Wallet Balance</button>
+		<p id="walletBalance" style="margin-top:10px; font-weight:bold; color:#007BFF;"></p>
+
+    </div>
+	<!-- LOADING OVERLAY -->
+	<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+	    <div class="loading-text">Processing Payment... Please wait.</div>
+	</div>
+</body>
+</html>

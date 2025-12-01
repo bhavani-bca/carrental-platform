@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Dashboard</title>
+    <style>
+		body {
+		    font-family: Arial, sans-serif;
+		    background-color: #f4f4f4;
+		    text-align: center;
+		    margin: 20px;
+		    transition: background-color 0.3s, color 0.3s;
+		}
+
+		h1 {
+		    color: #333;
+		}
+
+		.filter-container, .vehicle-card, .about-container {
+		    background: white;
+		    padding: 15px;
+		    border-radius: 10px;
+		    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+		    display: inline-block;
+		    margin-bottom: 20px;
+		    transition: background 0.3s, box-shadow 0.3s;
+		}
+
+		select, input {
+		    padding: 8px;
+		    margin: 5px;
+		    border-radius: 5px;
+		    border: 1px solid #ccc;
+		}
+
+		button {
+		    background-color: #007BFF;
+		    color: white;
+		    padding: 10px 15px;
+		    border: none;
+		    border-radius: 5px;
+		    cursor: pointer;
+		    transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+		}
+
+		button:hover {
+		    background-color: #0056b3;
+		    transform: scale(1.05);
+		}
+
+		.vehicle-list {
+		    display: flex;
+		    flex-wrap: wrap;
+		    justify-content: center;
+		}
+
+		.vehicle-card {
+		    width: 250px;
+		    margin: 10px;
+		    text-align: left;
+		    animation: fadeInUp 0.5s ease-in-out;
+		    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+		}
+
+		.vehicle-card:hover {
+		    transform: scale(1.05);
+		    box-shadow: 0px 8px 12px rgba(0, 0, 0, 0.2);
+		    cursor: pointer;
+		}
+
+		.menu-container {
+		    position: absolute;
+		    top: 10px;
+		    left: 10px;
+		    animation: slideInLeft 0.5s ease-in-out;
+		}
+
+		.menu-button {
+		    background-color: #007BFF;
+		    color: white;
+		    padding: 10px 15px;
+		    border: none;
+		    border-radius: 5px;
+		    cursor: pointer;
+		}
+
+		.menu-content {
+		    display: none;
+		    position: absolute;
+		    background: white;
+		    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+		    border-radius: 10px;
+		    min-width: 150px;
+		    z-index: 1;
+		}
+
+		.menu-content button {
+		    display: block;
+		    width: 100%;
+		    background: #007BFF;
+		    color: white;
+		    border: none;
+		    padding: 10px;
+		    text-align: left;
+		    cursor: pointer;
+		    border-radius: 5px;
+		}
+
+		.menu-content button:hover {
+		    background-color: #0056b3;
+		}
+
+		.menu-container:hover .menu-content {
+		    display: block;
+		}
+
+		@keyframes fadeInUp {
+		    from {
+		        opacity: 0;
+		        transform: translateY(20px);
+		    }
+		    to {
+		        opacity: 1;
+		        transform: translateY(0);
+		    }
+		}
+
+		@keyframes slideInLeft {
+		    from {
+		        opacity: 0;
+		        transform: translateX(-30px);
+		    }
+		    to {
+		        opacity: 1;
+		        transform: translateX(0);
+		    }
+		}
+
+		.section-divider {
+		    margin: 30px auto;
+		    border: none;
+		    height: 2px;
+		    background: #007BFF;
+		    width: 80%;
+		}
+
+		.about-container {
+		    margin: 30px auto;
+		    max-width: 800px;
+		    text-align: center;
+		}
+
+		footer {
+		    background: #007BFF;
+		    color: white;
+		    text-align: center;
+		    padding: 10px 0;
+		    margin-top: 20px;
+		    font-size: 14px;
+		    position: relative;
+		}
+
+		/* Dark Mode */
+		.dark-mode {
+		    background-color: #1e1e1e;
+		    color: white;
+		}
+
+		.dark-mode .filter-container, .dark-mode .vehicle-card, .dark-mode .about-container {
+		    background: #2a2a2a;
+		    box-shadow: 0px 4px 6px rgba(255, 255, 255, 0.1);
+		}
+
+		.dark-mode h1, .dark-mode h3, .dark-mode p {
+		    color: #ddd;
+		}
+
+		.dark-mode button {
+		    background-color: #444;
+		}
+
+		.dark-mode button:hover {
+		    background-color: #666;
+		}
+
+		.dark-mode .menu-content {
+		    background: #333;
+		}
+
+    </style>
+    <script>
+		document.addEventListener("DOMContentLoaded", function () {
+		    const toggleDarkModeButton = document.getElementById("toggleDarkMode");
+		    const body = document.body;
+
+		    // Function to enable dark mode
+		    function enableDarkMode() {
+		        body.classList.add("dark-mode");
+		        localStorage.setItem("dark-mode", "enabled");
+		    }
+
+		    // Function to disable dark mode
+		    function disableDarkMode() {
+		        body.classList.remove("dark-mode");
+		        localStorage.setItem("dark-mode", "disabled");
+		    }
+
+		    // Check localStorage for dark mode preference
+		    if (localStorage.getItem("dark-mode") === "enabled") {
+		        enableDarkMode();
+		    }
+
+		    // Toggle dark mode on button click
+		    toggleDarkModeButton.addEventListener("click", function () {
+		        if (body.classList.contains("dark-mode")) {
+		            disableDarkMode();
+		        } else {
+		            enableDarkMode();
+		        }
+		    });
+
+		    // Apply dark mode to all linked pages
+		    window.addEventListener("storage", function (event) {
+		        if (event.key === "dark-mode") {
+		            if (event.newValue === "enabled") {
+		                enableDarkMode();
+		            } else {
+		                disableDarkMode();
+		            }
+		        }
+		    });
+
+		    // Handle menu dropdown interactions
+		    const menuButton = document.querySelector(".menu-button");
+		    const menuContent = document.querySelector(".menu-content");
+
+		    menuButton.addEventListener("click", function () {
+		        menuContent.style.display =
+		            menuContent.style.display === "block" ? "none" : "block";
+		    });
+
+		    // Close menu when clicking outside
+		    document.addEventListener("click", function (event) {
+		        if (!menuButton.contains(event.target) && !menuContent.contains(event.target)) {
+		            menuContent.style.display = "none";
+		        }
+		    });
+		});
+
+
+				
+        async function fetchFilters() {
+            try {
+                const response = await fetch('http://localhost:8080/api/vehicles?page=0&size=50'); 
+                const data = await response.json();
+                console.log("API Response:", data);
+
+                let vehicles = Array.isArray(data) ? data : data.content;
+                
+                if (!vehicles || !Array.isArray(vehicles)) {
+                    console.error("Invalid API response format for filters:", data);
+                    return;
+                }
+
+                // Display all vehicles initially
+                displayVehicles(vehicles);
+                populateFilters(vehicles);
+            } catch (error) {
+                console.error("Error fetching filters:", error);
+            }
+        }
+
+        function populateFilters(vehicles) {
+            const companySet = new Set();
+            const fuelTypeSet = new Set();
+            const seatingSet = new Set();
+            
+            vehicles.forEach(vehicle => {
+                if (vehicle.company) companySet.add(vehicle.company);
+                if (vehicle.fuelType) fuelTypeSet.add(vehicle.fuelType);
+                if (vehicle.seatingCapacity) seatingSet.add(vehicle.seatingCapacity);
+            });
+            
+            populateDropdown('company', companySet);
+            populateDropdown('fuelType', fuelTypeSet);
+            populateDropdown('seatingCapacity', seatingSet);
+        }
+
+        function populateDropdown(id, values) {
+            const select = document.getElementById(id);
+            select.innerHTML = '<option value="">Any</option>'; // Default option
+            values.forEach(value => {
+                select.innerHTML += `<option value="${value}">${value}</option>`;
+            });
+        }
+
+        
+		async function fetchVehicles() {
+		    try {
+		        const company = document.getElementById('company').value;
+		        const fuelType = document.getElementById('fuelType').value;
+		        const isAvailable = document.getElementById('isAvailable').value;
+		        const search = document.getElementById('search').value;
+		        const maxRent = document.getElementById('maxRent').value;
+		        const seatingCapacity = document.getElementById('seatingCapacity').value;
+		        
+		        let url = 'http://localhost:8080/api/vehicles?';
+		        if (company) url += `company=${company}&`;
+		        if (fuelType) url += `fuelType=${fuelType}&`;
+		        if (isAvailable) url += `isAvailable=${isAvailable}&`;
+		        if (search) url += `search=${search}&`;
+		        if (maxRent) url += `maxRent=${maxRent}&`;
+		        if (seatingCapacity) url += `seatingCapacity=${seatingCapacity}&`;
+		        
+		        const response = await fetch(url);
+		        const data = await response.json();
+		        console.log("Filtered API Response:", data);
+		        
+		        let vehicles = Array.isArray(data) ? data : data.content;
+
+		        if (!vehicles || !Array.isArray(vehicles)) {
+		            console.error("Unexpected API response format:", data);
+		            return;
+		        }
+
+		        displayVehicles(vehicles);
+		    } catch (error) {
+		        console.error("Error fetching vehicles:", error);
+		    }
+		}
+
+		
+		
+		
+		
+		function displayVehicles(vehicles) {
+		    const container = document.getElementById('vehicleList');
+		    container.innerHTML = '';
+
+		    if (vehicles.length === 0) {
+		        container.innerHTML = "<p>No vehicles found.</p>";
+		        return;
+		    }
+
+		    vehicles.forEach(vehicle => {
+		        const model = vehicle.model ? vehicle.model : "Unknown Model"; 
+		        const company = vehicle.company ? vehicle.company : "Unknown Company";
+		        const imageUrl = vehicle.imgUrl ? vehicle.imgUrl : "placeholder.jpg"; // FIX: Use `imgUrl`
+		        
+		        const vehicleCard = document.createElement("div");
+		        vehicleCard.className = "vehicle-card";
+		        vehicleCard.innerHTML = `
+		            <img src="${imageUrl}" alt="${model}" style="width:100%; border-radius: 10px; height: 150px; object-fit: cover;">
+		            <h3>${model} (${company})</h3>
+		            <p>Fuel: ${vehicle.fuelType} | Rent: ₹${vehicle.rent} | Seats: ${vehicle.seatingCapacity}</p>
+		            <p>Available: ${vehicle.isAvailable ? 'Yes' : 'No'}</p>
+		        `;
+
+		        vehicleCard.onclick = function () {
+		            localStorage.setItem("selectedVehicleId", vehicle.id);
+		            localStorage.setItem("selectedModel", model);
+		            localStorage.setItem("selectedCompany", company);
+		            localStorage.setItem("selectedImage", imageUrl);
+		            window.location.href = "vehicleDetails.html";
+		        };
+
+		        container.appendChild(vehicleCard);
+		    });
+		}
+
+
+		
+		
+		function loadUserData() {
+		        const userEmail = localStorage.getItem("userEmail");
+
+		        if (!userEmail) {
+		            window.location.href = "login.html"; // Redirect if not logged in
+		            return;
+		        }
+
+		        document.getElementById("userInfo").innerHTML = 
+		            `<p>Welcome, <strong>${userEmail}</strong></p>`;
+		    }
+				
+			
+			function Profile() {
+			    const userEmail = localStorage.getItem("userEmail");
+			    if (userEmail) {
+			        window.location.href = `userProfile.html?email=${encodeURIComponent(userEmail)}`;
+			    } else {
+			        alert("User not logged in!");
+			    }
+			}
+	
+			function Review() {
+					const userEmail = localStorage.getItem("userEmail");
+					if (userEmail) {
+					window.location.href = `review.html?email=${encodeURIComponent(userEmail)}`;
+					} else {
+					alert("User not logged in!");
+					}
+			}
+			
+			
+		function wallet() {
+			const userEmail = localStorage.getItem("userEmail");
+			if (userEmail) {
+				window.location.href = `Wallet&CreditCard.html?email=${encodeURIComponent(userEmail)}`;
+			} else {
+				alert("User not logged in!");
+			}
+		}
+			
+		function logout() {
+			localStorage.removeItem("userId");
+			localStorage.removeItem("userEmail");
+			window.location.href = "login.html";
+		}
+
+        window.onload = function() {
+            loadUserData();
+            fetchFilters(); // Load all vehicles by default
+        };
+    </script>
+</head>
+<body>
+	<div class="menu-container">
+		        <button class="menu-button">☰ Menu</button>
+		        <div class="menu-content">
+		            <button onclick="Profile()">Profile</button>
+		            <button onclick="Review()">My Bookings</button>
+					<button onclick="wallet()">E-Wallet</button>
+					<button id="toggleDarkMode">Toggle Mode</button>
+					<button onclick="logout()">Logout</button>
+		        </div>
+	</div>
+	
+	
+    <h1>Vehicle Dashboard</h1>
+    <div id="userInfo"></div>
+    
+
+    <div class="filter-container">
+        <label>Company: <select id="company"></select></label>
+        <label>Fuel Type: <select id="fuelType"></select></label>
+        <label>Available: 
+            <select id="isAvailable">
+                <option value="">Any</option>
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </select>
+        </label>
+        <label>Model: <input type="text" id="search"></label>
+        <label>Max Rent: <input type="number" id="maxRent"></label>
+        <label>Seats: <select id="seatingCapacity"></select></label>
+        <button onclick="fetchVehicles()">Search</button>
+    </div>
+    <hr>
+    <div class="vehicle-list" id="vehicleList"></div>
+	
+	<!-- Horizontal Line Before About Section -->
+	    <hr class="section-divider">
+
+	    <!-- About CarEase Section -->
+	    <div class="about-container">
+	        <h2>About CarEase</h2>
+	        <p>
+	            Welcome to <strong>CarEase</strong> – your ultimate car rental solution. We simplify the process of renting cars by providing a seamless experience 
+	            with a wide range of vehicles to choose from. Whether you need a budget-friendly car for a short trip or a luxury vehicle for a special occasion, 
+	            we’ve got you covered!
+	        </p>
+	        <p>
+	            Our user-friendly platform offers real-time availability, transparent pricing, and a secure booking system to ensure a hassle-free experience. 
+	            With <strong>CarEase</strong>, renting a car is just a few clicks away!
+	        </p>
+	    </div>
+
+	    <!-- Footer -->
+	    <footer>
+	        <p>&copy; 2025 CarEase. All Rights Reserved.</p>
+	    </footer>
+</body>
+</html>

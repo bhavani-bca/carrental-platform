@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarEase - User Registration</title>
+	<style>
+		/* Global Reset */
+		* {
+		    margin: 0;
+		    padding: 0;
+		    box-sizing: border-box;
+		    font-family: Arial, sans-serif;
+		}
+
+		/* Centering the Form */
+		body {
+		    background-color: #f4f4f4;
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		    height: 100vh;
+		    padding: 10px; /* Prevents overflow issues */
+		}
+
+		/* Registration Form Container */
+		.form-container {
+		    background: white;
+		    padding: 20px;
+		    border-radius: 8px;
+		    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+		    width: 320px;  /* Same as login form */
+		    max-height: 80vh; /* Ensures form does not become too long */
+		    overflow-y: auto; /* Enables scrolling when content exceeds height */
+		    text-align: center;
+		}
+
+		/* Form Title */
+		h1 {
+		    font-size: 20px;
+		    margin-bottom: 15px;
+		    color: #333;
+		}
+
+		/* Input Fields */
+		input, select {
+		    width: 90%;
+		    padding: 8px;
+		    margin: 8px 0;
+		    border: 1px solid #ccc;
+		    border-radius: 5px;
+		    font-size: 14px;
+		}
+
+		/* Buttons */
+		button {
+		    width: 100%;
+		    padding: 10px;
+		    background-color: #007bff;
+		    color: white;
+		    border: none;
+		    border-radius: 5px;
+		    cursor: pointer;
+		    font-size: 15px;
+		    transition: background 0.3s ease;
+		}
+
+		button:hover {
+		    background-color: #0056b3;
+		}
+
+		/* OTP and Final Section */
+		#otp-section, #final-section {
+		    display: none;
+		}
+
+		/* Scrollbar Styling */
+		.form-container::-webkit-scrollbar {
+		    width: 6px;
+		}
+
+		.form-container::-webkit-scrollbar-thumb {
+		    background: #007bff;
+		    border-radius: 5px;
+		}
+
+		/* Link to Login */
+		div a {
+		    text-decoration: none;
+		    color: #007bff;
+		    font-weight: bold;
+		}
+
+		div a:hover {
+		    text-decoration: underline;
+		}
+
+		/* Loading Overlay */
+		.loading-overlay {
+		    display: none;
+		    position: fixed;
+		    top: 0;
+		    left: 0;
+		    width: 100%;
+		    height: 100%;
+		    background: rgba(0, 0, 0, 0.5);
+		    z-index: 999;
+		    justify-content: center;
+		    align-items: center;
+		}
+
+		/* Loader Animation */
+		.loader {
+		    border: 6px solid #f3f3f3;
+		    border-top: 6px solid #007bff;
+		    border-radius: 50%;
+		    width: 50px;
+		    height: 50px;
+		    animation: spin 1s linear infinite;
+		}
+
+		@keyframes spin {
+		    0% { transform: rotate(0deg); }
+		    100% { transform: rotate(360deg); }
+		}
+
+		
+	</style>
+	<script>
+		let userEmail = ""; // Store user's email globally
+		let userDetails = {}; // Store user details globally
+
+		
+		// Function to show/hide loading overlay
+		function showLoadingOverlay(show) {
+		    let overlay = document.getElementById("loadingOverlay");
+		    overlay.style.display = show ? "flex" : "none";
+		}
+		
+		// Modify sendOtp() to include loading effect
+		function sendOtp() {
+		    showLoadingOverlay(true); // Show loading overlay
+
+		    userEmail = document.getElementById("email").value; // Capture email
+
+		    userDetails = {  
+		        firstName: document.getElementById("firstName").value,
+		        lastName: document.getElementById("lastName").value,
+		        email: userEmail,
+		        address: document.getElementById("address").value,
+		        contact: document.getElementById("contact").value,
+		        password: document.getElementById("password").value,
+		        licence: document.getElementById("licence").value,
+		        licenceImg: "base64EncodedImageString" // Dummy image
+		    };
+
+		    console.log("Sending Registration Data:", JSON.stringify(userDetails));
+
+		    fetch("http://localhost:8080/auth/register", {
+		        method: "POST",
+		        headers: { "Content-Type": "application/json" },
+		        body: JSON.stringify(userDetails)
+		    })
+		    .then(response => response.text())
+		    .then(data => {
+		        console.log("Response:", data);
+		        alert(data);
+		        if (data.includes("OTP sent")) {
+		            document.getElementById("otp-section").style.display = "block";
+		        }
+		    })
+		    .catch(error => {
+		        console.error("Error sending OTP:", error);
+		        alert("Error sending OTP. Check console for details.");
+		    })
+		    .finally(() => showLoadingOverlay(false)); // Hide overlay after response
+		}
+
+		// Modify verifyOtp() to include loading effect
+		function verifyOtp() {
+		    showLoadingOverlay(true); // Show loading overlay
+
+		    const otp = document.getElementById("otp").value;
+
+		    if (!userEmail || Object.keys(userDetails).length === 0) {
+		        alert("User details missing. Please request OTP again.");
+		        showLoadingOverlay(false);
+		        return;
+		    }
+
+		    const requestBody = { ...userDetails, otp }; // Include OTP in stored user details
+
+		    console.log("Sending OTP Verification Data:", JSON.stringify(requestBody));
+
+		    fetch("http://localhost:8080/auth/verify-otp", {
+		        method: "POST",
+		        headers: { "Content-Type": "application/json" },
+		        body: JSON.stringify(requestBody)
+		    })
+		    .then(response => response.text().then(text => {
+		        console.log("Response:", text);
+		        if (!response.ok) {
+		            throw new Error("Server error: " + response.status + " - " + text);
+		        }
+		        return text;
+		    }))
+		    .then(data => {
+		        alert(data);
+		        if (data.includes("successful")) {
+		            document.getElementById("final-section").style.display = "block";
+		            document.getElementById("otp-section").style.display = "none";
+		        }
+		    })
+		    .catch(error => {
+		        console.error("Error verifying OTP:", error);
+		        alert("Error verifying OTP. Check console for details.");
+		    })
+		    .finally(() => showLoadingOverlay(false)); // Hide overlay after response
+		}
+		
+		document.addEventListener("DOMContentLoaded", function () {
+		    function showLoadingBar(button) {
+		        let formContainer = button.closest(".form-container");
+		        let loadingBar = formContainer.querySelector(".loading-bar");
+
+		        loadingBar.style.display = "block"; // Show loading bar
+
+		        setTimeout(() => {
+		            loadingBar.style.display = "none"; // Hide after 2 seconds
+		            alert("OTP Sent / Verified Successfully!"); // Show alert message
+		        }, 2000);
+		    }
+
+		    document.querySelector("#sendOtpButton").addEventListener("click", function () {
+		        showLoadingBar(this);
+		    });
+
+		    document.querySelector("#verifyOtpButton").addEventListener("click", function () {
+		        showLoadingBar(this);
+		    });
+		});
+
+	   </script>
+</head>
+<body>
+    <div class="form-container">
+        <div class="form-content">
+            <h1>CarEase - User Registration</h1>
+            <div id="register-section">
+                <label for="firstName">First Name:</label><br>
+                <input type="text" id="firstName" required><br><br>
+
+                <label for="lastName">Last Name:</label><br>
+                <input type="text" id="lastName" required><br><br>
+
+                <label for="email">Email:</label><br>
+                <input type="email" id="email" required><br><br>
+
+                <label for="address">Address:</label><br>
+                <input type="text" id="address" required><br><br>
+
+                <label for="contact">Contact Number:</label><br>
+                <input type="text" id="contact" required><br><br>
+
+                <label for="password">Password:</label><br>
+                <input type="password" id="password" required><br><br>
+
+                <label for="licence">Licence Number:</label><br>
+                <input type="text" id="licence" required><br><br>
+
+                <label for="licenceImg">Licence Image:</label><br>
+                <input type="file" id="licenceImgFile" accept="image/*" required><br><br>
+
+                <button onclick="sendOtp()">Send OTP</button>
+            </div>
+
+            <!-- Step 2: Enter OTP to Verify -->
+            <div id="otp-section" style="display: none;">
+                <label for="otp">Enter OTP:</label><br>
+                <input type="text" id="otp" required><br><br>
+                <button onclick="verifyOtp()">Verify OTP</button>
+            </div>
+
+            <!-- Step 3: Registration Completed -->
+            <div id="final-section" style="display: none;">
+                <h2>✅ Registration Successful!</h2>
+                <p>Welcome to CarEase! You can now log in.</p>
+            </div>
+			<br><br>
+			<div>
+				<label>If Already Registerd </label><br>
+				<a href="login.html">Click Here</a>
+			</div>
+        </div>
+        <div class="animation-container">
+            <div class="animation"></div>
+        </div>
+    </div>
+	<!-- Loading Overlay -->
+	<div id="loadingOverlay" class="loading-overlay">
+	    <div class="loader"></div>
+	</div>
+
+	
+</body>
+</html>

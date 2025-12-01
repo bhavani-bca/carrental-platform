@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Account</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            margin: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #ff0000;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Delete Your Account</h2>
+        <input type="email" id="email" placeholder="Enter your email" required>
+        <button onclick="requestOTP()">Request OTP</button>
+        <br>
+        <input type="text" id="otp" placeholder="Enter OTP" required>
+        <button onclick="verifyOTP()">Delete Account</button>
+        <p id="message"></p>
+    </div>
+
+    <script>
+        async function requestOTP() {
+            const email = document.getElementById("email").value;
+            try {
+                const response = await fetch("http://localhost:8080/auth/delete/request-otp", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email })
+                });
+                const text = await response.text();
+                try {
+                    const data = JSON.parse(text);
+                    document.getElementById("message").innerText = data.message;
+                } catch (e) {
+                    document.getElementById("message").innerText = text;
+                }
+            } catch (error) {
+                console.error("Error requesting OTP:", error);
+                document.getElementById("message").innerText = "Failed to request OTP.";
+            }
+        }
+
+        async function verifyOTP() {
+            const email = document.getElementById("email").value;
+            const otp = document.getElementById("otp").value;
+            try {
+                const response = await fetch("http://localhost:8080/auth/delete/verify", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, otp })
+                });
+                const text = await response.text();
+                try {
+                    const data = JSON.parse(text);
+                    document.getElementById("message").innerText = data.message;
+                } catch (e) {
+                    document.getElementById("message").innerText = text;
+                }
+            } catch (error) {
+                console.error("Error verifying OTP:", error);
+                document.getElementById("message").innerText = "Failed to delete account.";
+            }
+        }
+    </script>
+</body>
+</html>

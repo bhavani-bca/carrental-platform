@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Management</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wrapper {
+            display: flex;
+            gap: 20px; /* Space between containers */
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap; /* Ensures responsiveness */
+            max-width: 900px;
+        }
+
+        .container {
+            width: 400px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1s ease-in-out;
+            transform: scale(0.9);
+        }
+
+        input, button {
+            width: 96%;
+            margin: 10px 0;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        input {
+            background: #f4f4f4;
+            outline: none;
+        }
+
+        button {
+            background: linear-gradient(90deg, #ff758c, #ff7eb3);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 117, 140, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 117, 140, 0.5);
+        }
+
+        p {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-top: 10px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Wallet Balance Check Form -->
+        <div class="container">
+            <h2>Check Wallet Balance</h2>
+            <input type="text" id="walletNumber" placeholder="Enter Wallet Number">
+            <input type="password" id="pin" placeholder="Enter PIN">
+            <button onclick="checkBalance()">Check Balance</button>
+            <p id="balanceResult"></p>
+        </div>
+
+        <!-- Add Money Form -->
+        <div class="container">
+            <h2>Add Money to Wallet</h2>
+            <input type="text" id="walletNumberAdd" placeholder="Enter Wallet Number">
+            <input type="text" id="cardNumber" placeholder="Enter Card Number">
+            <input type="password" id="cvv" placeholder="Enter CVV">
+            <input type="number" id="amount" placeholder="Enter Amount">
+            <button onclick="addAmount()">Add Money</button>
+            <p id="addAmountResult"></p>
+        </div>
+    </div>
+
+    <script>
+        function checkBalance() {
+            const walletNumber = document.getElementById('walletNumber').value;
+            const pin = document.getElementById('pin').value;
+
+            fetch('http://localhost:8080/wallet/checkBalance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ walletNumber, pin })
+            })
+            .then(response => response.text())  // Always read response as text
+            .then(text => {
+                try {
+                    const data = JSON.parse(text); // Try parsing as JSON
+                    if (data.status === 500) {
+                        alert("Error: Due to some internal server issue, can't fetch balance.");
+                        return;
+                    }
+                } catch (error) {
+                    // Not JSON, process as normal text
+                }
+
+                if (text.includes("Current Balance:")) {
+                    document.getElementById('balanceResult').innerText = text; // Show balance
+                } else {
+                    document.getElementById('balanceResult').innerText = `Error: ${text}`; // Show error
+                }
+            })
+            .catch(() => {
+                document.getElementById('balanceResult').innerText = "Error: Unable to fetch balance"; // Generic error
+            });
+        }
+
+        function addAmount() {
+            const walletNumber = document.getElementById('walletNumberAdd').value;
+            const cardNumber = document.getElementById('cardNumber').value;
+            const cvv = document.getElementById('cvv').value;
+            const amount = document.getElementById('amount').value;
+
+            fetch('http://localhost:8080/wallet/addAmount', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ walletNumber, cardNumber, cvv, amount })
+            })
+            .then(response => response.text())  // Always read response as text
+            .then(text => {
+                document.getElementById('addAmountResult').innerText = text; // Show backend response as is
+            })
+            .catch(() => {}); // Ignore errors
+        }
+    </script>
+</body>
+</html>
